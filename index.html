@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dashboard interactivo de vuelos, retrasos, cancelaciones y riesgo predictivo.">
+  <title>Flight Risk Intelligence Dashboard</title>
+
+  <link rel="preconnect" href="https://cdn.plot.ly">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
+</head>
+
+<body>
+  <div class="loader" id="loader" aria-live="polite">
+    <div class="loader-plane">✈</div>
+    <strong>Cargando dashboard...</strong>
+    <span>Preparando los indicadores y gráficos</span>
+  </div>
+
+  <div class="orb orb-one"></div>
+  <div class="orb orb-two"></div>
+  <div class="orb orb-three"></div>
+
+  <header class="hero reveal">
+    <div class="hero-copy">
+      <span class="eyebrow">EC3 · Introducción a Data Science</span>
+      <h1>Flight Risk Intelligence</h1>
+      <p>
+        Dashboard web interactivo para analizar el estado de los vuelos,
+        cancelaciones, retrasos y riesgo predictivo.
+      </p>
+    </div>
+
+    <aside class="filter-box">
+      <label for="airlineSelect">Filtrar por aerolínea</label>
+      <select id="airlineSelect">
+        <option value="__all__">Todas las aerolíneas</option>
+      </select>
+      <button id="resetBtn" type="button">
+        <span>↻</span> Reiniciar vista
+      </button>
+      <small id="filterStatus">Mostrando todos los vuelos</small>
+    </aside>
+  </header>
+
+  <main>
+    <section class="kpi-grid reveal" aria-label="Indicadores principales">
+      <article class="kpi-card blue">
+        <div class="kpi-icon">✈</div>
+        <span>Total vuelos</span>
+        <strong id="kpiTotal">0</strong>
+        <small>Registros analizados</small>
+      </article>
+
+      <article class="kpi-card red">
+        <div class="kpi-icon">×</div>
+        <span>% cancelados</span>
+        <strong id="kpiCancel">0%</strong>
+        <small>Vuelos que no se realizaron</small>
+      </article>
+
+      <article class="kpi-card orange">
+        <div class="kpi-icon">⌛</div>
+        <span>% retrasados</span>
+        <strong id="kpiDelay">0%</strong>
+        <small>Llegada con 15 minutos o más</small>
+      </article>
+
+      <article class="kpi-card yellow">
+        <div class="kpi-icon">↗</div>
+        <span>Promedio retraso llegada</span>
+        <strong id="kpiArrDelay">0</strong>
+        <small>Minutos promedio</small>
+      </article>
+
+      <article class="kpi-card purple">
+        <div class="kpi-icon">◎</div>
+        <span>Probabilidad prom. cancelación</span>
+        <strong id="kpiProbability">0</strong>
+        <small>Resultado promedio del modelo</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel span-4 reveal">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-number">01</span>
+            <h2>Distribución del estado de vuelos</h2>
+          </div>
+          <p>A tiempo, retrasado y cancelado</p>
+        </div>
+        <div id="chartEstado" class="chart chart-medium"></div>
+      </article>
+
+      <article class="panel span-4 reveal">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-number">05</span>
+            <h2>Clasificación del riesgo predictivo</h2>
+          </div>
+          <p>Niveles bajo, medio y alto</p>
+        </div>
+        <div id="chartRiesgo" class="chart chart-medium"></div>
+      </article>
+
+      <article class="panel insight-panel span-4 reveal">
+        <span class="eyebrow">Lectura automática</span>
+        <h2>¿Qué nos dicen los datos?</h2>
+        <div class="insight-list">
+          <div>
+            <span>Aerolínea con más cancelación</span>
+            <strong id="insightCancel">—</strong>
+          </div>
+          <div>
+            <span>Mayor retraso promedio</span>
+            <strong id="insightDelay">—</strong>
+          </div>
+          <div>
+            <span>Relación salida–llegada</span>
+            <strong id="insightCorrelation">—</strong>
+          </div>
+        </div>
+        <p id="insightText">
+          Selecciona una aerolínea para actualizar los indicadores y los gráficos.
+        </p>
+      </article>
+
+      <article class="panel span-6 reveal">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-number">02</span>
+            <h2>Porcentaje de cancelación por aerolínea</h2>
+          </div>
+          <p>Ordenado de mayor a menor</p>
+        </div>
+        <div id="chartCancelAirline" class="chart chart-tall"></div>
+      </article>
+
+      <article class="panel span-6 reveal">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-number">03</span>
+            <h2>Retraso promedio de llegada por aerolínea</h2>
+          </div>
+          <p>Minutos promedio por compañía</p>
+        </div>
+        <div id="chartDelayAirline" class="chart chart-tall"></div>
+      </article>
+
+      <article class="panel span-12 reveal">
+        <div class="panel-heading scatter-heading">
+          <div>
+            <span class="panel-number">04</span>
+            <h2>Relación entre retraso de salida y retraso de llegada</h2>
+          </div>
+          <p>
+            Cada punto representa un vuelo. El color indica el riesgo predictivo
+            y el tamaño representa la distancia.
+          </p>
+        </div>
+        <div id="chartScatter" class="chart chart-scatter"></div>
+      </article>
+    </section>
+
+    <section class="executive-note reveal">
+      <div>
+        <span class="eyebrow">Interpretación gerencial</span>
+        <h2>Un tablero que transforma datos en decisiones</h2>
+      </div>
+      <p>
+        La visualización permite identificar rápidamente las aerolíneas con más
+        cancelaciones, los mayores retrasos y los vuelos con riesgo elevado. Así,
+        la empresa puede anticipar incidencias, mejorar la comunicación con los
+        pasajeros y priorizar acciones en las operaciones más críticas.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Flight Risk Intelligence Dashboard</span>
+    <span>HTML · CSS · JavaScript · Plotly · GitHub Pages</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
